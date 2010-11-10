@@ -3,14 +3,25 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <assert.h>
 #include <zlib.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef __STDC__
+#if __STDC_VERSION__ >= 199901L
+
+typedef _Bool bool;
+
+#else
+
 enum bool { false = 0, true };
 typedef enum bool bool;
+
+#endif
+#endif /* __STDC__ */
 
 #pragma pack(1) // set data align
 
@@ -99,5 +110,8 @@ uncompress_buffer(char *source, size_t source_len, char *dest, size_t dest_len);
 
 bool
 verify_crc32(unsigned int source_crc32, char *source, size_t len);
+
+int
+unzip(char *zipfile, char *path);
 
 #endif /* _ZIP_H_ */
