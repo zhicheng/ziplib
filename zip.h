@@ -112,6 +112,6 @@ bool
 verify_crc32(unsigned int source_crc32, char *source, size_t len);
 
 int
-unzip(char *zipfile, char *path);
+unzip(char *zipfile, char *path, size_t path_len);
 
 #endif /* _ZIP_H_ */

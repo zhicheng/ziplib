@@ -92,7 +92,7 @@ get_central_dir_size(FILE *fp, size_t offset)
 int
 verify_zip(FILE *fp)
 {
-
+    return 1;
 }
 
 bool
@@ -104,7 +104,7 @@ uncompress_buffer(char *source, size_t source_len, char *dest, size_t dest_len)
 
     memcpy(zlib_content + 2, source, source_len);
 
-    int n = uncompress(dest, &dest_len, zlib_content, source_len + 2);
+    int n = uncompress((unsigned char *)dest, &dest_len, (unsigned char *)zlib_content, source_len + 2);
     if (n == Z_MEM_ERROR) {
         return false;
     } else if (n == Z_BUF_ERROR) {
@@ -114,13 +114,14 @@ uncompress_buffer(char *source, size_t source_len, char *dest, size_t dest_len)
         /* verify crc32 in next step */
     }
     free(zlib_content);
+    return true;
 }
 
 bool
 verify_crc32(unsigned int source_crc32, char *source, size_t len)
 {
     unsigned int crc = crc32(0L, Z_NULL, 0);
-    crc = crc32(crc, source, len);
+    crc = crc32(crc, (unsigned char *)source, len);
     if (crc != source_crc32) {
         return false;
     }
@@ -128,13 +129,9 @@ verify_crc32(unsigned int source_crc32, char *source, size_t len)
 }
 
 int
-main(int argc, char *argv[])
+unzip(char *zipfile, char *path, size_t path_len)
 {
-    if (argc != 2) {
-        printf("%s filename\n", argv[0]);
-        return 0;
-    }
-    FILE *fp = fopen(argv[1], "rb");
+    FILE *fp = fopen(zipfile, "rb");
 
     unsigned short centraldir_offset = 0;
     char *c_buffer;
@@ -161,10 +158,11 @@ main(int argc, char *argv[])
         if ((fileHeader = get_file_header(fp, centralDir->file_header_offset)) == NULL)
             continue;
 
-        filename = (char *)malloc(fileHeader->filename_length + 1);
+        filename = (char *)malloc(fileHeader->filename_length + path_len + 1);
+        strncpy(filename, path, path_len);
         fseek(fp, centralDir->file_header_offset + sizeof(FileHeader), SEEK_SET);
-        fread(filename, fileHeader->filename_length, 1, fp);
-        filename[fileHeader->filename_length] = '\0';
+        fread(filename + path_len, fileHeader->filename_length, 1, fp);
+        filename[fileHeader->filename_length + path_len] = '\0';
         printf("filename: %s\n", filename);
 
         c_buffer = get_file_content(fp, centralDir->file_header_offset, centralDir->compressed_size);
@@ -187,7 +185,7 @@ main(int argc, char *argv[])
             }
         }
         
-        if (filename[fileHeader->filename_length - 1] == '/') {
+        if (filename[fileHeader->filename_length + path_len - 1] == '/') {
             mkdir(filename, 0744);
         } else {
             fd = open(filename, O_WRONLY | O_CREAT);
@@ -202,5 +200,16 @@ main(int argc, char *argv[])
     }
     fclose(fp);
     return 0;
+}
+
+int
+main(int argc, char *argv[])
+{
+    if (argc != 2) {
+        printf("%s filename\n", argv[0]);
+        return 1;
+    }
+
+    return unzip(argv[1], "/Users/l/", 9);
 }
 
