@@ -69,6 +69,8 @@ struct ArchiveEndData
     unsigned short file_comment;
 };
 
+#pragma pack()
+
 typedef struct FileHeaderData FileHeader;
 typedef struct FileDescData   FileDesc;
 typedef struct CentralDirData CentralDir;

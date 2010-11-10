@@ -148,7 +148,7 @@ main(int argc, char *argv[])
     archiveEnd = get_archive_end(fp);
 
     for (i = 0; i < archiveEnd->dir_number; i++) {
-        if (centralDir = get_central_dir(fp, archiveEnd->dir_offset + centraldir_offset) == NULL)
+        if ((centralDir = get_central_dir(fp, archiveEnd->dir_offset + centraldir_offset);) == NULL)
            break; 
         centraldir_offset += get_central_dir_size(fp, archiveEnd->dir_offset + centraldir_offset);
         if (centralDir->compression_method != 8 
@@ -158,7 +158,7 @@ main(int argc, char *argv[])
         }
 
         FileHeader *fileHeader;
-        if (fileHeader = get_file_header(fp, centralDir->file_header_offset) == NULL)
+        if ((fileHeader = get_file_header(fp, centralDir->file_header_offset)) == NULL)
             continue;
 
         filename = (char *)malloc(fileHeader->filename_length + 1);
