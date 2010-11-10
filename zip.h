@@ -13,7 +13,7 @@
 #ifdef __STDC__
 #if __STDC_VERSION__ >= 199901L
 
-typedef _Bool bool;
+#include <stdbool.h>
 
 #else
 
